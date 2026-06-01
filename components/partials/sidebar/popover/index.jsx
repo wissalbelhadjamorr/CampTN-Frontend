@@ -95,7 +95,6 @@ const PopoverSidebar = ({ trans }) => {
         >
           {menus.map((item, i) => (
             <li key={`menu_key_${i}`}>
-              {/* single menu  */}
 
               {!item.child && !item.isHeader && (
                 <SingleMenuItem
@@ -105,12 +104,10 @@ const PopoverSidebar = ({ trans }) => {
                 />
               )}
 
-              {/* menu label */}
               {item.isHeader && !item.child && !collapsed && (
                 <MenuLabel item={item} trans={trans} />
               )}
 
-              {/* sub menu */}
               {item.child && (
                 <>
                   <SubMenuHandler

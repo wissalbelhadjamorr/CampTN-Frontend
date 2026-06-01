@@ -115,7 +115,6 @@ const MessagesPage = () => {
 
   return (
     <div className="container mx-auto p-6 h-[calc(100vh-80px)]">
-      {/* Titre */}
       <div className="mb-5">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Messagerie</h1>
         <p className="text-sm text-gray-400 mt-0.5">Vos conversations en temps réel</p>
@@ -123,9 +122,7 @@ const MessagesPage = () => {
 
       <div className="flex h-[calc(100%-72px)] rounded-2xl overflow-hidden border border-border shadow-xl bg-white dark:bg-zinc-900">
 
-        {/* Sidebar conversations */}
         <div className="w-80 flex flex-col border-r border-border bg-gray-50 dark:bg-zinc-900">
-          {/* Search */}
           <div className="p-3 border-b border-border">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
@@ -138,7 +135,6 @@ const MessagesPage = () => {
             </div>
           </div>
 
-          {/* Liste */}
           <div className="overflow-y-auto flex-1">
             {loadingConvs ? (
               <div className="flex flex-col gap-3 p-3">
@@ -170,7 +166,6 @@ const MessagesPage = () => {
                         : "hover:bg-white dark:hover:bg-zinc-800"
                     }`}
                   >
-                    {/* Avatar */}
                     <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                       isActive
                         ? "bg-emerald-500 text-white"
@@ -203,11 +198,9 @@ const MessagesPage = () => {
           </div>
         </div>
 
-        {/* Zone messages */}
         <div className="flex-1 flex flex-col bg-white dark:bg-zinc-900">
           {selectedConv ? (
             <>
-              {/* Header */}
               <div className="px-4 py-3 border-b border-border flex items-center gap-3 bg-white dark:bg-zinc-900 shadow-sm">
                 <div className="h-9 w-9 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
                   {getInitials(selectedConv.interlocuteur.prenom, selectedConv.interlocuteur.nom)}
@@ -222,7 +215,6 @@ const MessagesPage = () => {
                 </div>
               </div>
 
-              {/* Messages */}
               <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-gray-50 dark:bg-zinc-950">
                 {messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2 text-center">
@@ -258,7 +250,6 @@ const MessagesPage = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input */}
               <div className="px-4 py-3 border-t border-border bg-white dark:bg-zinc-900 flex gap-2 items-center">
                 <Input
                   placeholder="Écrire un message..."

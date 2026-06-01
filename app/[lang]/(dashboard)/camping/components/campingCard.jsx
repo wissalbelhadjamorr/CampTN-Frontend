@@ -140,7 +140,6 @@ const CampingCard = ({ camping, user, onStatusUpdate, onEdit, onDelete }) => {
 
       <CardFooter className="p-4 border-t border-border flex flex-col gap-2">
 
-        {/* ── Admin : camping en attente ── */}
         {isAdmin && camping.statut === 'en_attente' && (
           <>
             <div className="flex gap-2 w-full">
@@ -169,7 +168,6 @@ const CampingCard = ({ camping, user, onStatusUpdate, onEdit, onDelete }) => {
           </>
         )}
 
-        {/* ── Admin : camping validé → peut archiver ── */}
         {isAdmin && camping.statut === 'valide' && (
           <Button
             size="sm"
@@ -180,9 +178,16 @@ const CampingCard = ({ camping, user, onStatusUpdate, onEdit, onDelete }) => {
           </Button>
         )}
 
+        {isAdmin && camping.statut === 'archive' && (
+          <Button
+            size="sm"
+            className="w-full gap-1 bg-green-600 hover:bg-green-700 text-white"
+            onClick={() => onStatusUpdate(camping.camping_id, 'valide')}
+          >
+            <Check className="h-4 w-4" /> Remettre en ligne
+          </Button>
+        )}
 
-
-        {/* ── Gestionnaire propriétaire ── */}
         {isGestionnaire && isOwner && (
           <div className="flex gap-2 w-full">
             <Button
@@ -193,13 +198,15 @@ const CampingCard = ({ camping, user, onStatusUpdate, onEdit, onDelete }) => {
             >
               <Edit className="h-4 w-4" /> Modifier
             </Button>
-            <Button
-              size="sm"
-              className="flex-1 gap-1 bg-red-600 hover:bg-red-700 text-white"
-              onClick={() => onDelete(camping.camping_id)}
-            >
-              <Trash2 className="h-4 w-4" /> Supprimer
-            </Button>
+            {onDelete && (
+              <Button
+                size="sm"
+                className="flex-1 gap-1 bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => onDelete(camping.camping_id)}
+              >
+                <Trash2 className="h-4 w-4" /> Supprimer
+              </Button>
+            )}
           </div>
         )}
 

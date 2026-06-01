@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
 
+const setCookie = (token) => {
+  document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}`;
+};
+
+const deleteCookie = () => {
+  document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+};
+
 export const useAuth = () => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
@@ -9,6 +17,7 @@ export const useAuth = () => {
     const init = () => {
       const storedToken = localStorage.getItem("token");
       if (!storedToken) {
+        deleteCookie();
         setLoading(false);
         return;
       }
@@ -16,6 +25,7 @@ export const useAuth = () => {
         const payload = JSON.parse(atob(storedToken.split(".")[1]));
         if (payload.exp * 1000 < Date.now()) {
           localStorage.removeItem("token");
+          deleteCookie();
           setUser(null);
           setToken(null);
           setLoading(false);
@@ -27,24 +37,25 @@ export const useAuth = () => {
           role: payload.role,
         });
         setToken(storedToken);
+        setCookie(storedToken); // ← sync cookie pour le middleware
       } catch (err) {
         console.error("Token invalide");
         localStorage.removeItem("token");
+        deleteCookie();
       }
       setLoading(false);
     };
 
-    // Attendre que localStorage soit disponible (hydration SSR)
     if (typeof window !== "undefined") {
       init();
     }
   }, []);
 
-  // Écouter les changements de token (login/logout depuis d'autres onglets ou composants)
   useEffect(() => {
     const handleStorage = () => {
       const storedToken = localStorage.getItem("token");
       if (!storedToken) {
+        deleteCookie();
         setUser(null);
         setToken(null);
         return;
@@ -57,7 +68,9 @@ export const useAuth = () => {
           role: payload.role,
         });
         setToken(storedToken);
+        setCookie(storedToken); // ← sync cookie pour le middleware
       } catch {
+        deleteCookie();
         setUser(null);
         setToken(null);
       }

@@ -38,7 +38,6 @@ const ForgotPasswordPage = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-[440px]">
 
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">🏕️</div>
           <h1 className="text-2xl font-bold">Mot de passe oublié ?</h1>
@@ -48,7 +47,6 @@ const ForgotPasswordPage = () => {
         </div>
 
         {sent ? (
-          // ← état après envoi
           <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
             <Mail className="h-12 w-12 text-green-600 mx-auto mb-3" />
             <h2 className="font-semibold text-green-800 mb-2">Email envoyé !</h2>

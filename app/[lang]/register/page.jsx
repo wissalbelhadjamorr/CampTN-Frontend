@@ -8,7 +8,6 @@ const RegPage = () => {
     <div className="min-h-screen bg-background flex items-center overflow-hidden w-full">
       <div className="min-h-screen basis-full flex flex-wrap w-full justify-center overflow-y-auto">
 
-        {/* Partie gauche - contenu adaptatif */}
         <div className="basis-1/2 w-full relative hidden xl:flex justify-center items-center bg-card">
           <Image
             src={background}
@@ -29,7 +28,6 @@ const RegPage = () => {
               campings de Tunisie dès aujourd'hui.
             </p>
 
-            {/* Stats */}
             <div className="grid grid-cols-3 gap-4 pt-2">
               {[
                 { value: "20F+", label: "Campings" },
@@ -46,7 +44,6 @@ const RegPage = () => {
               ))}
             </div>
 
-            {/* Feature cards */}
             <div className="flex flex-col gap-3 pt-2">
               {[
                 { icon: "🔒", title: "Inscription sécurisée", desc: "Vos données sont protégées et confidentielles" },
@@ -66,7 +63,6 @@ const RegPage = () => {
               ))}
             </div>
 
-            {/* Citation */}
             <div className="border-t border-border pt-6">
               <p className="text-muted-foreground text-sm italic">
                 "La nature est la meilleure thérapie."
@@ -75,7 +71,6 @@ const RegPage = () => {
           </div>
         </div>
 
-        {/* Partie droite - formulaire */}
         <div className="min-h-screen basis-full md:basis-1/2 w-full px-4 py-5 flex justify-center items-center">
           <div className="lg:w-[480px]">
             <RegForm />

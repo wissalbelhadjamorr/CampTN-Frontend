@@ -77,7 +77,6 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
 
-      {/* HERO */}
       <section className="relative overflow-hidden py-24 px-6">
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-emerald-500/10 blur-3xl" />
@@ -126,7 +125,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ✅ RECOMMANDATIONS — juste après le hero, visible uniquement pour les clients */}
       {isClient && recommendations.length > 0 && (
         <section className="py-16 px-6">
           <div className="max-w-7xl mx-auto">
@@ -155,7 +153,6 @@ const HomePage = () => {
         </section>
       )}
 
-      {/* ETAPES */}
       <section className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 space-y-4">
@@ -181,7 +178,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* CARTE */}
       <section className="py-20 px-6 bg-muted/40">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 space-y-4">
@@ -199,7 +195,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* FONCTIONNALITES */}
       <section className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 space-y-4">
@@ -223,7 +218,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* CTA GESTIONNAIRE */}
       {!isGestionnaire && !isAdmin && (
         <section className="py-20 px-6 bg-emerald-500/5 border-y border-emerald-500/20">
           <div className="max-w-4xl mx-auto text-center space-y-6">
@@ -259,7 +253,6 @@ const HomePage = () => {
         </section>
       )}
 
-      {/* CTA FINAL */}
       {!isAuthenticated && (
         <section className="py-20 px-6 bg-muted/40">
           <div className="max-w-3xl mx-auto text-center space-y-8">

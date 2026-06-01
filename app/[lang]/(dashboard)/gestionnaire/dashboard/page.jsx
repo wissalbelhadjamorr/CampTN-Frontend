@@ -152,7 +152,6 @@ const GestionnaireDashboard = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-500">
       
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10 pb-6 border-b border-border/60">
         <div>
           
@@ -165,7 +164,6 @@ const GestionnaireDashboard = () => {
         </Button>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
         <Card className="relative overflow-hidden group hover:shadow-md transition-all duration-300 border-border/80">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -196,7 +194,6 @@ const GestionnaireDashboard = () => {
         </Card>
       </div>
 
-      {/* Camping Selector Tab-Style */}
       {campings.length > 1 && (
         <div className="mb-8 bg-muted/40 p-2 rounded-xl border border-border/60">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">Filtrer par camping :</p>
@@ -218,7 +215,6 @@ const GestionnaireDashboard = () => {
         </div>
       )}
 
-      {/* Main Content Tabs */}
       <Tabs defaultValue="campings" className="space-y-6">
         <TabsList className="bg-muted/80 p-1 rounded-xl border border-border/50 h-11 w-full max-w-md grid grid-cols-3">
           <TabsTrigger value="campings" className="rounded-lg data-[state=active]:shadow-sm gap-2">
@@ -237,7 +233,6 @@ const GestionnaireDashboard = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* ===== TAB: CAMPINGS ===== */}
         <TabsContent value="campings" className="outline-none mt-4">
           {loadingCampings ? (
             <div className="py-20 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
@@ -265,7 +260,6 @@ const GestionnaireDashboard = () => {
           )}
         </TabsContent>
 
-        {/* ===== TAB: RESERVATIONS ===== */}
         <TabsContent value="reservations" className="outline-none mt-4">
           {loadingReservations ? (
             <div className="py-20 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
@@ -280,7 +274,6 @@ const GestionnaireDashboard = () => {
               ) : reservations.map(r => (
                 <div key={r.reservation_id} className="bg-card border border-border/70 rounded-xl p-5 shadow-sm transition-all hover:border-border/100">
                   
-                  {/* Top row */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/50 mb-4">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold">
@@ -301,7 +294,6 @@ const GestionnaireDashboard = () => {
                     </Badge>
                   </div>
 
-                  {/* Grid info */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
                     <div>
                       <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Arrivée</p>
@@ -325,14 +317,12 @@ const GestionnaireDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Comment option */}
                   {r.message && (
                     <div className="text-sm bg-muted/50 text-muted-foreground rounded-lg p-3 italic border-l-2 border-primary/30 mb-4">
                       "{r.message}"
                     </div>
                   )}
 
-                  {/* Bottom info / Actions */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
                     <p className="text-xs text-muted-foreground">
                       Soumis le {new Date(r.dateCreation).toLocaleDateString("fr-FR")} à {new Date(r.dateCreation).toLocaleTimeString("fr-FR", {hour: '2-digit', minute:'2-digit'})}
@@ -368,7 +358,6 @@ const GestionnaireDashboard = () => {
           )}
         </TabsContent>
 
-        {/* ===== TAB: AVIS ===== */}
         <TabsContent value="avis" className="outline-none mt-4">
           {loadingAvis ? (
             <div className="py-20 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
@@ -399,7 +388,6 @@ const GestionnaireDashboard = () => {
                     </Badge>
                   </div>
                   
-                  {/* Stars Container */}
                   <div className="flex items-center gap-1.5 mb-2 bg-muted/40 w-fit px-2 py-1 rounded-md">
                     <div className="flex text-amber-400">
                       {"★".repeat(a.note)}{"☆".repeat(5 - a.note)}
@@ -417,7 +405,6 @@ const GestionnaireDashboard = () => {
         </TabsContent>
       </Tabs>
 
-      {/* ===== MODAL: EDITION (Glassmorphism overlay) ===== */}
       {editingCamping && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
           <div className="bg-card rounded-xl w-full max-w-2xl shadow-2xl border border-border/50 my-4 animate-in zoom-in-95 duration-200">
@@ -430,7 +417,6 @@ const GestionnaireDashboard = () => {
         </div>
       )}
 
-      {/* ===== MODAL: CREATION (Glassmorphism overlay) ===== */}
       {creatingCamping && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
           <div className="bg-card rounded-xl w-full max-w-2xl shadow-2xl border border-border/50 my-4 animate-in zoom-in-95 duration-200">

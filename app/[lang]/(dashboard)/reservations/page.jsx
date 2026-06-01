@@ -97,7 +97,6 @@ const MesReservationsPage = () => {
             return (
               <div key={r.reservation_id} className="rounded-xl border border-border bg-card overflow-hidden">
 
-                {/* Header */}
                 <div className="flex items-start justify-between gap-3 px-4 py-3.5 border-b border-border">
                   <div>
                     <p className="text-sm font-medium text-foreground">{r.camping?.nom}</p>
@@ -114,7 +113,6 @@ const MesReservationsPage = () => {
                   </span>
                 </div>
 
-                {/* Stats grid */}
                 <div className="grid grid-cols-3 md:grid-cols-5 divide-x divide-border border-b border-border">
                   {[
                     {
@@ -174,7 +172,6 @@ const MesReservationsPage = () => {
                   ))}
                 </div>
 
-                {/* Footer */}
                 <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-muted/30 flex-wrap">
                   <span className="text-[11px] text-muted-foreground">
                     Réservé le {new Date(r.dateCreation).toLocaleDateString("fr-FR")}

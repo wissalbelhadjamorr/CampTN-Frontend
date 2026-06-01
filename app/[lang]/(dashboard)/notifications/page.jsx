@@ -130,7 +130,6 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -156,7 +155,6 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      {/* Filtres */}
       <div className="flex gap-2 mb-6">
         {[
           { key: "all", label: "Toutes" },
@@ -183,7 +181,6 @@ export default function NotificationsPage() {
         ))}
       </div>
 
-      {/* Liste */}
       <div className="rounded-xl border bg-card overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-default-500 text-sm">
@@ -205,12 +202,10 @@ export default function NotificationsPage() {
                 { "bg-blue-50 dark:bg-blue-950/20": !item.read }
               )}
             >
-              {/* Icône */}
               <div className="text-2xl mt-0.5 flex-shrink-0">
                 {getIcon(item.type)}
               </div>
 
-              {/* Contenu */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-sm text-default-900 leading-snug">

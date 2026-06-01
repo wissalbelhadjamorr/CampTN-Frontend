@@ -408,7 +408,6 @@ const CampingDetailPage = () => {
         Retour
       </Button>
 
-      {/* Galerie photos */}
       <div className="mb-6">
         {camping.photos?.length > 0 ? (
           <div className={`grid gap-2 ${
@@ -467,7 +466,6 @@ const CampingDetailPage = () => {
         </div>
       </div>
 
-      {/* Lightbox */}
       {lightboxIndex !== null && camping.photos?.length > 0 && (
         <div
           className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
@@ -507,7 +505,6 @@ const CampingDetailPage = () => {
         </div>
       )}
 
-      {/* Infos + boutons */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="md:col-span-2">
           <h1 className="text-3xl font-bold uppercase mb-2">{camping.nom}</h1>
@@ -550,7 +547,6 @@ const CampingDetailPage = () => {
         </div>
       </div>
 
-      {/* Services */}
       <div className="mb-6">
         <h2 className="text-xl font-bold mb-3">Services disponibles ({camping.services?.length || 0})</h2>
         {camping.services?.length > 0 ? (
@@ -562,7 +558,6 @@ const CampingDetailPage = () => {
         ) : <p className="text-muted-foreground text-sm">Aucun service disponible.</p>}
       </div>
 
-      {/* Activités */}
       <div className="mb-6">
         <h2 className="text-xl font-bold mb-3">Activités ({camping.activites?.length || 0})</h2>
         {camping.activites?.length > 0 ? (
@@ -574,7 +569,6 @@ const CampingDetailPage = () => {
         ) : <p className="text-muted-foreground text-sm">Aucune activité disponible.</p>}
       </div>
 
-      {/* Types de zone */}
       <div className="mb-6">
         <h2 className="text-xl font-bold mb-3">Types de zone ({camping.typeZones?.length || 0})</h2>
         {camping.typeZones?.length > 0 ? (
@@ -586,7 +580,6 @@ const CampingDetailPage = () => {
         ) : <p className="text-muted-foreground text-sm">Aucun type de zone défini.</p>}
       </div>
 
-      {/* Carte */}
       {camping.latitude && camping.longitude && (
         <div className="mb-6">
           <h2 className="text-xl font-bold mb-3">Localisation</h2>
@@ -594,7 +587,6 @@ const CampingDetailPage = () => {
         </div>
       )}
 
-      {/* ===== SECTION AVIS ===== */}
       {!isAdmin && !isGestionnaire && (
         <div className="mb-6">
           <h2 className="text-xl font-bold mb-3">Avis ({avisValides.length})</h2>
@@ -748,7 +740,6 @@ const CampingDetailPage = () => {
             <p className="text-muted-foreground text-sm">Aucun avis pour le moment.</p>
           )}
 
-          {/* Campings similaires */}
           {recommendations.length > 0 && (
             <div className="mb-6 mt-6">
               <h2 className="text-xl font-bold mb-4">Campings similaires</h2>
@@ -787,12 +778,10 @@ const CampingDetailPage = () => {
         </div>
       )}
 
-      {/* ===== MODAL RÉSERVATION ===== */}
       {showReservationForm && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-card rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
 
-            {/* En-tête modal */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <div>
                 <h2 className="text-lg font-bold">Demande de réservation</h2>
@@ -809,7 +798,6 @@ const CampingDetailPage = () => {
 
             <div className="px-6 py-5 space-y-5">
 
-              {/* Règle obligatoire 1 nuit */}
               <div className="flex items-start gap-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl px-3.5 py-3">
                 <Moon className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
@@ -817,9 +805,7 @@ const CampingDetailPage = () => {
                 </p>
               </div>
 
-              {/* Dates */}
               <div className="grid grid-cols-2 gap-3">
-                {/* Date d'arrivée */}
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground block mb-1.5">
                     Date d'arrivée <span className="text-red-500">*</span>
@@ -857,7 +843,6 @@ const CampingDetailPage = () => {
                   )}
                 </div>
 
-                {/* Date de départ */}
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground block mb-1.5">
                     Date de départ <span className="text-red-500">*</span>
@@ -894,7 +879,6 @@ const CampingDetailPage = () => {
                 </div>
               </div>
 
-              {/* Résumé nuits si valide */}
               {nombreNuits >= 1 && !dateErrors.dateDebut && !dateErrors.dateFin && (
                 <div className="flex items-center gap-2 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-xl px-3.5 py-2.5">
                   <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
@@ -906,7 +890,6 @@ const CampingDetailPage = () => {
                 </div>
               )}
 
-              {/* Nombre de personnes */}
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground block mb-1.5">
                   <span className="flex items-center gap-1.5">
@@ -938,7 +921,6 @@ const CampingDetailPage = () => {
                 )}
               </div>
 
-              {/* Récapitulatif montant */}
               {nombreNuits >= 1 && !hasErrors && (
                 <div className="bg-muted/60 rounded-xl p-4 border border-border">
                   <p className="text-xs text-muted-foreground uppercase font-semibold mb-2 tracking-wide">Récapitulatif</p>
@@ -956,7 +938,6 @@ const CampingDetailPage = () => {
               )}
 
              
-              {/* Boutons */}
               <div className="flex gap-3 pt-1">
                 <Button
                   className="flex-1"
@@ -978,7 +959,6 @@ const CampingDetailPage = () => {
                 </Button>
               </div>
 
-              {/* Message si bouton désactivé */}
               {!canSubmit && (touched.dateDebut || touched.dateFin) && !reservationLoading && (
                 <p className="text-xs text-center text-muted-foreground -mt-2">
                   Veuillez corriger les erreurs pour continuer.

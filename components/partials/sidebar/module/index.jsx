@@ -163,7 +163,6 @@ const menus = allMenus.filter(item => !item.role || item.role === user?.role);
             <Link href="/dashboard">
             </Link>
           </div>
-          {/* end logo */}
           <ScrollArea className=" pt-6 grow ">
             {menus.map((item, i) => (
               <div
@@ -183,7 +182,6 @@ const menus = allMenus.filter(item => !item.role || item.role === user?.role);
           </ScrollArea>
           <FooterMenu />
         </div>
-        {/* end small menu */}
 
         <div
           className={cn(
@@ -245,7 +243,6 @@ const menus = allMenus.filter(item => !item.role || item.role === user?.role);
             </div>
           </ScrollArea>
         </div>
-        {/* end main panel */}
       </div>
       {!isDesktop && (
         <MenuOverlayPortal

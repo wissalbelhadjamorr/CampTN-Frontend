@@ -157,7 +157,6 @@ const CampingsPage = () => {
   return (
     <div className="container mx-auto p-4 max-w-7xl">
 
-      {/* Header compact */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="p-1.5 bg-primary/10 rounded-lg">
@@ -181,10 +180,8 @@ const CampingsPage = () => {
         )}
       </div>
 
-      {/* Barre de recherche principale */}
       <div className="bg-card border rounded-xl p-3 mb-4 space-y-3">
 
-        {/* Ligne 1 : nom + gouvernorat + bouton filtres */}
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -229,11 +226,9 @@ const CampingsPage = () => {
           </Button>
         </div>
 
-        {/* Filtres avancés collapsibles */}
         {showAdvanced && (
           <div className="border-t pt-3 space-y-3">
 
-            {/* Prix */}
             <div className="flex items-center gap-4">
               <span className="text-xs font-medium text-muted-foreground whitespace-nowrap w-24">Prix / nuit</span>
               <div className="flex-1">
@@ -248,7 +243,6 @@ const CampingsPage = () => {
               </span>
             </div>
 
-            {/* Services */}
             {services.length > 0 && (
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-1.5">Services</p>
@@ -267,7 +261,6 @@ const CampingsPage = () => {
               </div>
             )}
 
-            {/* Types de zone */}
             {typeZones.length > 0 && (
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-1.5">Type de zone</p>
@@ -288,7 +281,6 @@ const CampingsPage = () => {
           </div>
         )}
 
-        {/* Filtres statut admin/gestionnaire */}
         {(user?.role === "admin" || user?.role === "gestionnaire") && (
           <div className="flex gap-1.5 flex-wrap border-t pt-3">
             <span className="text-xs text-muted-foreground flex items-center gap-1 mr-1">
@@ -318,7 +310,6 @@ const CampingsPage = () => {
         )}
       </div>
 
-      {/* ✅ Recommandations EN HAUT — avant la grille principale */}
       {user?.role === "client" && recommendations.length > 0 && (
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
@@ -345,7 +336,6 @@ const CampingsPage = () => {
         </div>
       )}
 
-      {/* Grille principale */}
       {filteredCampings.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredCampings.map((camping) => (
@@ -378,7 +368,6 @@ const CampingsPage = () => {
         </div>
       )}
 
-      {/* Modal édition */}
       {selectedCamping && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-card rounded-xl w-full max-w-2xl my-4 shadow-2xl">

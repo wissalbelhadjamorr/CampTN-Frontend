@@ -40,7 +40,6 @@ const PhotoCarousel = ({ photos, nom }) => {
           >
             <ChevronRight className="h-4 w-4" />
           </button>
-          {/* Dots */}
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
             {photos.map((_, i) => (
               <button
@@ -114,7 +113,6 @@ const FavorisPage = () => {
                 key={favori.favori_id}
                 className="bg-card border rounded-xl overflow-hidden hover:shadow-md transition-shadow flex flex-col"
               >
-                {/* Zone image — hauteur fixe identique pour toutes les cards */}
                 <div className="relative h-44 w-full shrink-0">
                   <PhotoCarousel photos={camping.photos} nom={camping.nom} />
                   <Badge className="absolute top-3 right-3 bg-primary capitalize z-10">
@@ -122,7 +120,6 @@ const FavorisPage = () => {
                   </Badge>
                 </div>
 
-                {/* Contenu — flex-1 pour aligner les boutons en bas */}
                 <div className="p-4 flex flex-col flex-1">
                   <h2 className="font-bold text-lg uppercase mb-1 line-clamp-2 leading-tight">
                     {camping.nom}

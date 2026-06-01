@@ -97,18 +97,15 @@ export default function CampingMap() {
   return (
     <div className="mx-auto w-full max-w-5xl mt-10">
 
-      {/* Titre */}
       <div className="mb-4 px-1">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Carte des campings</h1>
         <p className="text-sm text-gray-400 mt-0.5">Explorez les campings disponibles en Tunisie</p>
       </div>
 
-      {/* Carte container */}
       <div
         className="relative rounded-3xl overflow-hidden shadow-2xl border border-border"
         style={{ height: 480 }}
       >
-        {/* Header flottant */}
         <div
           className="absolute top-0 left-0 right-0 z-[1000] flex items-center justify-between px-5 py-3"
           style={{
@@ -127,16 +124,13 @@ export default function CampingMap() {
           )}
         </div>
 
-        {/* Map */}
         <div id="camping-map" className="w-full h-full" />
 
-        {/* Panel latéral */}
         {selected && (
           <div
             className="absolute top-0 right-0 h-full z-[1000] flex flex-col bg-white dark:bg-zinc-900 shadow-2xl"
             style={{ width: 260, borderLeft: "1px solid rgba(0,0,0,0.06)" }}
           >
-            {/* Photo */}
             <div className="relative flex-shrink-0 overflow-hidden" style={{ height: 150 }}>
               {selected.photos?.[0]?.url ? (
                 <img src={selected.photos[0].url} alt={selected.nom} className="w-full h-full object-cover" />
@@ -154,7 +148,6 @@ export default function CampingMap() {
               </div>
             </div>
 
-            {/* Info */}
             <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
               <div>
                 <h3 className="font-bold text-sm text-gray-900 dark:text-white leading-tight">{selected.nom}</h3>
@@ -198,7 +191,6 @@ export default function CampingMap() {
               )}
             </div>
 
-            {/* Boutons */}
             <div className="p-3 border-t border-gray-100 dark:border-zinc-800 space-y-1.5 flex-shrink-0">
               <button
                 onClick={() => router.push(`/${lang}/camping/${selected.camping_id}`)}
@@ -216,7 +208,6 @@ export default function CampingMap() {
           </div>
         )}
 
-        {/* Loading */}
         {loading && (
           <div className="absolute inset-0 z-[999] bg-white/70 backdrop-blur-sm flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">
@@ -227,7 +218,6 @@ export default function CampingMap() {
         )}
       </div>
 
-      {/* Légende */}
       <div className="flex items-center justify-center gap-6 mt-3">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-300" />

@@ -76,7 +76,6 @@ const ChooseRolePage = () => {
         </Button>
       </div>
 
-      {/* Champ justificatif affiché uniquement si gestionnaire sélectionné */}
       {selectedRole === "gestionnaire" && (
         <div className="w-full max-w-sm flex flex-col gap-2">
           <label className="text-sm font-medium">
@@ -90,7 +89,6 @@ const ChooseRolePage = () => {
         </div>
       )}
 
-      {/* Bouton confirmer affiché après sélection */}
       {selectedRole && (
         <Button onClick={handleChooseRole} disabled={isPending} className="w-48">
           {isPending ? "Chargement..." : "Confirmer"}

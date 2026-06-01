@@ -37,6 +37,9 @@ const AdminDashboard = () => {
   const [activites, setActivites] = useState([]);
   const [avis, setAvis] = useState([]);
 
+  const [filtreStatut, setFiltreStatut] = useState("tous");
+  const [filtreRole, setFiltreRole] = useState("tous");
+
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingCampings, setLoadingCampings] = useState(false);
   const [loadingGestionnaires, setLoadingGestionnaires] = useState(false);
@@ -179,17 +182,6 @@ const AdminDashboard = () => {
       fetchCampings();
     } catch (err) {
       toast.error("Erreur mise à jour statut");
-    }
-  };
-
-  const handleDeleteCamping = async (id) => {
-    if (!confirm("Supprimer ce camping ?")) return;
-    try {
-      await CampingService.deleteCamping(id);
-      toast.success("Camping supprimé !");
-      fetchCampings();
-    } catch (err) {
-      toast.error("Erreur suppression");
     }
   };
 
@@ -353,8 +345,37 @@ const AdminDashboard = () => {
     }
   };
 
-  if (loading) return <div className="p-10 text-center flex items-center justify-center gap-2"><Loader2 className="animate-spin h-5 w-5" /> Chargement...</div>;
-  if (user?.role !== "admin") return <div className="p-10 text-center text-destructive">Accès refusé.</div>;
+  const campingsFiltres = campings.filter(c =>
+    filtreStatut === "tous" || c.statut === filtreStatut
+  );
+
+  const utilisateursFiltres = utilisateurs.filter(u =>
+    filtreRole === "tous" || u.role === filtreRole
+  );
+
+  const filtreRoleOptions = [
+    { key: "tous", label: "Tous" },
+    { key: "admin", label: "Admins" },
+    { key: "gestionnaire", label: "Gestionnaires" },
+    { key: "client", label: "Clients" },
+  ];
+
+  const filtreOptions = [
+    { key: "tous", label: "Tous" },
+    { key: "valide", label: "Validés" },
+    { key: "en_attente", label: "En attente" },
+    { key: "archive", label: "Archivés" },
+    { key: "refuse", label: "Refusés" },
+  ];
+
+  if (loading) return (
+    <div className="p-10 text-center flex items-center justify-center gap-2">
+      <Loader2 className="animate-spin h-5 w-5" /> Chargement...
+    </div>
+  );
+  if (user?.role !== "admin") return (
+    <div className="p-10 text-center text-destructive">Accès refusé.</div>
+  );
 
   return (
     <div className="container mx-auto p-6 space-y-8">
@@ -363,7 +384,6 @@ const AdminDashboard = () => {
         <p className="text-muted-foreground mt-1">Gérez l'ensemble des utilisateurs, campings, configurations et avis de la plateforme.</p>
       </div>
 
-      {/* Statistiques */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
@@ -408,19 +428,41 @@ const AdminDashboard = () => {
           <TabsTrigger value="campings" className="gap-2"><Tent className="h-4 w-4" />Campings</TabsTrigger>
           <TabsTrigger value="gestionnaires" className="gap-2 relative">
             <Clock className="h-4 w-4" />Gestionnaires
-            {stats.gestionnairesEnAttente > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">{stats.gestionnairesEnAttente}</span>}
+            {stats.gestionnairesEnAttente > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">
+                {stats.gestionnairesEnAttente}
+              </span>
+            )}
           </TabsTrigger>
           <TabsTrigger value="services" className="gap-2"><Settings className="h-4 w-4" />Services</TabsTrigger>
           <TabsTrigger value="typezones" className="gap-2"><Map className="h-4 w-4" />Types de zone</TabsTrigger>
           <TabsTrigger value="activites" className="gap-2"><Activity className="h-4 w-4" />Activités</TabsTrigger>
           <TabsTrigger value="avis" className="gap-2 relative">
             <MessageSquare className="h-4 w-4" />Avis
-            {stats.avisEnAttente > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">{stats.avisEnAttente}</span>}
+            {stats.avisEnAttente > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">
+                {stats.avisEnAttente}
+              </span>
+            )}
           </TabsTrigger>
         </TabsList>
 
-        {/* ── Utilisateurs — lecture seule ── */}
         <TabsContent value="utilisateurs">
+          <div className="flex flex-wrap gap-2 mb-4">
+            {filtreRoleOptions.map(({ key, label }) => (
+              <Button
+                key={key}
+                size="sm"
+                variant={filtreRole === key ? "default" : "outline"}
+                onClick={() => setFiltreRole(key)}
+              >
+                {label}
+                <span className="ml-1.5 text-xs opacity-70">
+                  ({key === "tous" ? utilisateurs.length : utilisateurs.filter(u => u.role === key).length})
+                </span>
+              </Button>
+            ))}
+          </div>
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg">Gestion des Utilisateurs</CardTitle>
@@ -443,7 +485,13 @@ const AdminDashboard = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {utilisateurs.map(u => (
+                      {utilisateursFiltres.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="p-8 text-center text-muted-foreground text-sm">
+                            Aucun utilisateur dans cette catégorie.
+                          </td>
+                        </tr>
+                      ) : utilisateursFiltres.map(u => (
                         <tr key={u.utilisateur_id} className="hover:bg-muted/30 transition-colors">
                           <td className="p-3 font-medium">{u.prenom} {u.nom}</td>
                           <td className="p-3 text-muted-foreground">{u.email}</td>
@@ -470,33 +518,49 @@ const AdminDashboard = () => {
           </Card>
         </TabsContent>
 
-        {/* ── Campings ── */}
         <TabsContent value="campings">
+          <div className="flex flex-wrap gap-2 mb-4">
+            {filtreOptions.map(({ key, label }) => (
+              <Button
+                key={key}
+                size="sm"
+                variant={filtreStatut === key ? "default" : "outline"}
+                onClick={() => setFiltreStatut(key)}
+              >
+                {label}
+                <span className="ml-1.5 text-xs opacity-70">
+                  ({key === "tous" ? campings.length : campings.filter(c => c.statut === key).length})
+                </span>
+              </Button>
+            ))}
+          </div>
+
           {loadingCampings ? (
-            <div className="p-8 text-center flex justify-center"><Loader2 className="animate-spin h-6 w-6 text-muted-foreground" /></div>
+            <div className="p-8 text-center flex justify-center">
+              <Loader2 className="animate-spin h-6 w-6 text-muted-foreground" />
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {campings.map(camping => (
+              {campingsFiltres.map(camping => (
                 <CampingCard
                   key={camping.camping_id}
                   camping={camping}
                   user={user}
                   onStatusUpdate={handleCampingStatus}
-                  onDelete={handleDeleteCamping}
+                  onDelete={null}
                   onEdit={() => {}}
                 />
               ))}
-              {campings.length === 0 && (
+              {campingsFiltres.length === 0 && (
                 <div className="col-span-full py-12 text-center border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-6">
                   <Tent className="h-8 w-8 text-muted-foreground/60 mb-2" />
-                  <p className="text-sm text-muted-foreground">Aucun centre de camping enregistré.</p>
+                  <p className="text-sm text-muted-foreground">Aucun camping dans cette catégorie.</p>
                 </div>
               )}
             </div>
           )}
         </TabsContent>
 
-        {/* ── Gestionnaires ── */}
         <TabsContent value="gestionnaires">
           <Card className="shadow-sm">
             <CardHeader>
@@ -505,7 +569,9 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               {loadingGestionnaires ? (
-                <div className="p-8 text-center flex justify-center"><Loader2 className="animate-spin h-6 w-6 text-muted-foreground" /></div>
+                <div className="p-8 text-center flex justify-center">
+                  <Loader2 className="animate-spin h-6 w-6 text-muted-foreground" />
+                </div>
               ) : (
                 <div className="space-y-3">
                   {gestionnaires.length === 0 ? (
@@ -519,13 +585,13 @@ const AdminDashboard = () => {
                         <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
                           {g.prenom[0]}{g.nom[0]}
                         </div>
-<div>
-  <p className="font-medium text-sm">{g.prenom} {g.nom}</p>
-  <p className="text-xs text-muted-foreground">{g.email}</p>
-  {g.justificatif && (
-    <p className="text-xs text-muted-foreground mt-1">📄 {g.justificatif}</p>
-  )}
-</div>
+                        <div>
+                          <p className="font-medium text-sm">{g.prenom} {g.nom}</p>
+                          <p className="text-xs text-muted-foreground">{g.email}</p>
+                          {g.justificatif && (
+                            <p className="text-xs text-muted-foreground mt-1">📄 {g.justificatif}</p>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2 self-end sm:self-center">
                         <Button size="sm" className="bg-green-600 hover:bg-green-700 h-8"
@@ -545,7 +611,6 @@ const AdminDashboard = () => {
           </Card>
         </TabsContent>
 
-        {/* ── Services ── */}
         <TabsContent value="services">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             <Card className="shadow-sm">
@@ -598,7 +663,6 @@ const AdminDashboard = () => {
           </div>
         </TabsContent>
 
-        {/* ── Types de Zone ── */}
         <TabsContent value="typezones">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             <Card className="shadow-sm">
@@ -651,7 +715,6 @@ const AdminDashboard = () => {
           </div>
         </TabsContent>
 
-        {/* ── Activités ── */}
         <TabsContent value="activites">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             <Card className="shadow-sm">
@@ -704,7 +767,6 @@ const AdminDashboard = () => {
           </div>
         </TabsContent>
 
-        {/* ── Avis ── */}
         <TabsContent value="avis">
           <Card className="shadow-sm">
             <CardHeader>

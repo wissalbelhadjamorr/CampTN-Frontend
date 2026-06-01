@@ -62,7 +62,6 @@ const ProfilPage = () => {
 
   return (
     <div className="max-w-lg mx-auto mt-10 px-4">
-      {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <div className="w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-300 font-medium text-lg border border-border shrink-0">
           {initials || "?"}
@@ -75,7 +74,6 @@ const ProfilPage = () => {
         </div>
       </div>
 
-      {/* Google badge */}
       {compte === "google" && (
         <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 rounded-lg px-3 py-2 mb-6">
           <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
@@ -85,7 +83,6 @@ const ProfilPage = () => {
         </div>
       )}
 
-      {/* Informations card */}
       <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">
         Informations personnelles
       </p>
@@ -119,7 +116,6 @@ const ProfilPage = () => {
         ))}
       </div>
 
-      {/* Password card */}
       {compte === "local" && (
         <div className="rounded-xl border border-border bg-muted/30 overflow-hidden mb-6">
           <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border">
@@ -143,7 +139,6 @@ const ProfilPage = () => {
         </div>
       )}
 
-      {/* Save button */}
       <button
         onClick={handleSubmit}
         disabled={isPending}

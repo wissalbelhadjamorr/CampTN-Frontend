@@ -15,15 +15,25 @@ import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 const ProfileInfo = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const lang = params?.lang || "fr"; 
+  const lang = params?.lang || "fr";
 
   const handleLogout = () => {
+    // Supprimer localStorage
     localStorage.removeItem("token");
+    // Supprimer le cookie pour que le middleware soit synchronisé
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
     router.push(`/${lang}/login`);
   };
+
+  // Pendant le chargement, ne rien afficher pour éviter le flash login/register
+  if (loading) {
+    return (
+      <div className="w-9 h-9 rounded-full bg-muted animate-pulse" />
+    );
+  }
 
   if (!user) {
     return (

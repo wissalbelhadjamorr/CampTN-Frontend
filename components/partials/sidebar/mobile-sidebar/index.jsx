@@ -90,18 +90,15 @@ const MobileSidebar = ({ collapsed, className }) => {
           >
             {menus.map((item, i) => (
               <li key={`menu_key_${i}`}>
-                {/* single menu  */}
 
                 {!item.child && !item.isHeader && (
                   <SingleMenuItem item={item} collapsed={collapsed} />
                 )}
 
-                {/* menu label */}
                 {item.isHeader && !item.child && !collapsed && (
                   <MenuLabel item={item} />
                 )}
 
-                {/* sub menu */}
                 {item.child && (
                   <>
                     <SubMenuHandler

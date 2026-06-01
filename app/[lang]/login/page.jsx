@@ -8,14 +8,12 @@ const LoginPage = () => {
     <div className="min-h-screen bg-background flex items-center overflow-hidden w-full">
       <div className="min-h-screen basis-full flex flex-wrap w-full justify-center overflow-y-auto">
 
-        {/* Partie gauche - formulaire */}
         <div className="min-h-screen basis-full md:basis-1/2 w-full px-4 py-5 flex justify-center items-center">
           <div className="lg:w-[480px]">
             <LogInForm />
           </div>
         </div>
 
-        {/* Partie droite - contenu adaptatif */}
         <div className="basis-1/2 w-full relative hidden xl:flex justify-center items-center bg-card">
           <Image
             src={background}
@@ -36,7 +34,6 @@ const LoginPage = () => {
               vivez des expériences inoubliables en pleine nature.
             </p>
 
-            {/* Stats */}
             <div className="grid grid-cols-3 gap-4 pt-2">
               {[
                 { value: "20+", label: "Campings" },
@@ -53,7 +50,6 @@ const LoginPage = () => {
               ))}
             </div>
 
-            {/* Feature cards */}
             <div className="flex flex-col gap-3 pt-2">
               {[
                 { icon: "🏕️", title: "Réservation instantanée", desc: "Confirmez votre séjour en quelques clics" },
@@ -73,7 +69,6 @@ const LoginPage = () => {
               ))}
             </div>
 
-            {/* Citation */}
             <div className="border-t border-border pt-6">
               <p className="text-muted-foreground text-sm italic">
                 "La nature est la meilleure thérapie."
