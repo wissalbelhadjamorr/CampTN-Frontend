@@ -30,9 +30,9 @@ const features = [
 ];
 
 const stats = [
-  { value: "50+", label: "Campings référencés" },
+  { value: "20+", label: "Campings référencés" },
   { value: "24", label: "Gouvernorats couverts" },
-  { value: "1000+", label: "Voyageurs satisfaits" },
+  { value: "20+", label: "Voyageurs satisfaits" },
   { value: "100%", label: "Avis authentiques" },
 ];
 

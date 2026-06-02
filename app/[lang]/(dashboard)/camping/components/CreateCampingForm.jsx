@@ -57,7 +57,6 @@ const schema = z.object({
   autresServices: z.string().optional(),
 });
 
-// ← Accepte onSuccess et onCancel en props (pour usage en modal)
 const CreateCampingForm = ({ onSuccess, onCancel }) => {
   const [isPending, startTransition] = React.useTransition();
   const [services, setServices] = useState([]);
@@ -165,7 +164,7 @@ data.activiteIds?.forEach(id => formData.append("activiteIds", String(id)));
         await CampingService.createCamping(formData);
         toast.success("Camping créé avec succès !");
         handleReset();
-        if (onSuccess) onSuccess(); // ← ferme le modal + refresh la liste
+        if (onSuccess) onSuccess(); 
       } catch (err) {
         toast.error(err.message || "Erreur lors de la création");
       }

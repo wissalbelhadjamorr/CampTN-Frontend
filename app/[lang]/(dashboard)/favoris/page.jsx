@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { FavorisService } from "@/services/favoris";
 
-// Mini carousel local — évite les problèmes de hauteur du shadcn Carousel
+
 const PhotoCarousel = ({ photos, nom }) => {
   const [index, setIndex] = useState(0);
   if (!photos?.length) return (

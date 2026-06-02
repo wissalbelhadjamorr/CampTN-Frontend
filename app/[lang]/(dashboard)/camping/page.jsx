@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import CampingCard from "@/app/[lang]/(dashboard)/camping/components/campingCard";
 import EditCampingForm from "@/app/[lang]/(dashboard)/camping/components/EditCampingForm";
@@ -10,8 +11,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Tent, Filter, X, SlidersHorizontal, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Search,
+  Tent,
+  Filter,
+  X,
+  SlidersHorizontal,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { AnalyticsService } from "@/services/analytics";
 
 const STATUT_CONFIG = {
@@ -22,8 +37,12 @@ const STATUT_CONFIG = {
   archive: { label: "Archivés" },
 };
 
-const CampingsPage = () => {
+// ─── Composant interne (utilise useSearchParams) ───────────────────────────
+const CampingsPageInner = () => {
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [campings, setCampings] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
@@ -34,50 +53,81 @@ const CampingsPage = () => {
   const [services, setServices] = useState([]);
   const [typeZones, setTypeZones] = useState([]);
   const [gouvernorats, setGouvernorats] = useState([]);
-
-  const [filters, setFilters] = useState({
-    nom: "",
-    gouvernorat: "all",
-    prixMin: 0,
-    prixMax: 500,
-    serviceIds: [],
-    typeZoneIds: [],
-  });
   const [recommendations, setRecommendations] = useState([]);
 
+  // ── Initialiser les filtres depuis l'URL ──────────────────────────────────
+  const [filters, setFilters] = useState({
+    nom: searchParams.get("nom") || "",
+    gouvernorat: searchParams.get("gouvernorat") || "all",
+    prixMin: Number(searchParams.get("prixMin")) || 0,
+    prixMax: Number(searchParams.get("prixMax")) || 500,
+    serviceIds: searchParams.get("serviceIds")
+      ? searchParams.get("serviceIds").split(",").map(Number)
+      : [],
+    typeZoneIds: searchParams.get("typeZoneIds")
+      ? searchParams.get("typeZoneIds").split(",").map(Number)
+      : [],
+  });
+
+  // ── Chargement initial ────────────────────────────────────────────────────
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         setDataLoading(true);
-        const [govs, servs, zones, allCampings] = await Promise.all([
+        const [govs, servs, zones] = await Promise.all([
           CampingService.getGouvernorats(),
           CampingService.getServices(),
           CampingService.getTypeZones(),
-          CampingService.searchCampings({}),
         ]);
         setGouvernorats(govs || []);
         setServices(servs || []);
         setTypeZones(zones || []);
-        setCampings(allCampings || []);
+
+        // Lancer la recherche avec les filtres de l'URL (ou vides)
+        const results = await CampingService.searchCampings({
+          nom: filters.nom || undefined,
+          gouvernorat: filters.gouvernorat !== "all" ? filters.gouvernorat : undefined,
+          prixMin: filters.prixMin,
+          prixMax: filters.prixMax,
+          serviceIds: filters.serviceIds.length ? filters.serviceIds : undefined,
+          typeZoneIds: filters.typeZoneIds.length ? filters.typeZoneIds : undefined,
+        });
+        setCampings(results || []);
       } catch (err) {
         console.error("Erreur chargement initial", err);
       } finally {
         setDataLoading(false);
       }
     };
+
     if (!authLoading) loadInitialData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user?.id]);
 
   useEffect(() => {
     if (user?.role === "client") {
-      AnalyticsService.getRecommendationsForMe().then(data => {
-        console.log("recommendations:", data);
+      AnalyticsService.getRecommendationsForMe().then((data) => {
         setRecommendations(data || []);
       });
     }
   }, [user]);
 
+  // ── Recherche + mise à jour URL ───────────────────────────────────────────
   const handleSearch = useCallback(async () => {
+    // 1. Construire les query params
+    const params = new URLSearchParams();
+    if (filters.nom) params.set("nom", filters.nom);
+    if (filters.gouvernorat !== "all") params.set("gouvernorat", filters.gouvernorat);
+    if (filters.prixMin > 0) params.set("prixMin", String(filters.prixMin));
+    if (filters.prixMax < 500) params.set("prixMax", String(filters.prixMax));
+    if (filters.serviceIds.length) params.set("serviceIds", filters.serviceIds.join(","));
+    if (filters.typeZoneIds.length) params.set("typeZoneIds", filters.typeZoneIds.join(","));
+
+    // 2. Mettre à jour l'URL sans recharger la page
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.push(newUrl, { scroll: false });
+
+    // 3. Appel API
     setDataLoading(true);
     try {
       const results = await CampingService.searchCampings({
@@ -94,14 +144,15 @@ const CampingsPage = () => {
     } finally {
       setDataLoading(false);
     }
-  }, [filters]);
+  }, [filters, pathname, router]);
 
+  // ── Actions CRUD ──────────────────────────────────────────────────────────
   const handleStatusUpdate = async (id, statut) => {
     try {
       await CampingService.updateStatut(id, statut);
       toast.success(`Camping ${statut} avec succès !`);
       handleSearch();
-    } catch (err) {
+    } catch {
       toast.error("Erreur lors de la mise à jour du statut.");
     }
   };
@@ -112,7 +163,7 @@ const CampingsPage = () => {
       await CampingService.deleteCamping(id);
       toast.success("Camping supprimé !");
       handleSearch();
-    } catch (err) {
+    } catch {
       toast.error("Erreur lors de la suppression.");
     }
   };
@@ -120,43 +171,66 @@ const CampingsPage = () => {
   const toggleSelection = (id, key) => {
     setFilters((prev) => {
       const list = prev[key];
-      return { ...prev, [key]: list.includes(id) ? list.filter(i => i !== id) : [...list, id] };
+      return {
+        ...prev,
+        [key]: list.includes(id) ? list.filter((i) => i !== id) : [...list, id],
+      };
     });
   };
 
   const clearFilters = () => {
-    setFilters({ nom: "", gouvernorat: "all", prixMin: 0, prixMax: 500, serviceIds: [], typeZoneIds: [] });
+    setFilters({
+      nom: "",
+      gouvernorat: "all",
+      prixMin: 0,
+      prixMax: 500,
+      serviceIds: [],
+      typeZoneIds: [],
+    });
     setFilter("tous");
+    // Supprimer les params de l'URL
+    router.push(pathname, { scroll: false });
   };
 
+  // ── Dérivés ───────────────────────────────────────────────────────────────
   const hasActiveFilters =
-    filters.nom || filters.gouvernorat !== "all" ||
-    filters.prixMin > 0 || filters.prixMax < 500 ||
-    filters.serviceIds.length > 0 || filters.typeZoneIds.length > 0 ||
+    filters.nom ||
+    filters.gouvernorat !== "all" ||
+    filters.prixMin > 0 ||
+    filters.prixMax < 500 ||
+    filters.serviceIds.length > 0 ||
+    filters.typeZoneIds.length > 0 ||
     filter !== "tous";
 
-  const filteredCampings = (user?.role === "admin" || user?.role === "gestionnaire")
-    ? campings.filter(c => filter === "tous" || c.statut === filter)
-    : campings;
+  const filteredCampings =
+    user?.role === "admin" || user?.role === "gestionnaire"
+      ? campings.filter((c) => filter === "tous" || c.statut === filter)
+      : campings;
 
   const getCount = (statut) =>
-    statut === "tous" ? campings.length : campings.filter(c => c.statut === statut).length;
+    statut === "tous"
+      ? campings.length
+      : campings.filter((c) => c.statut === statut).length;
 
   const getStatutFilters = () =>
     user?.role === "admin"
       ? ["tous", "en_attente", "valide", "refuse", "archive"]
       : ["tous", "en_attente", "valide", "refuse"];
 
-  if (authLoading) return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
-      <Tent className="h-10 w-10 text-primary animate-bounce" />
-      <p className="text-muted-foreground text-sm">Chargement...</p>
-    </div>
-  );
+  // ── Chargement auth ───────────────────────────────────────────────────────
+  if (authLoading)
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+        <Tent className="h-10 w-10 text-primary animate-bounce" />
+        <p className="text-muted-foreground text-sm">Chargement...</p>
+      </div>
+    );
 
+  // ── Rendu ─────────────────────────────────────────────────────────────────
   return (
     <div className="container mx-auto p-4 max-w-7xl">
 
+      {/* En-tête */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="p-1.5 bg-primary/10 rounded-lg">
@@ -164,24 +238,35 @@ const CampingsPage = () => {
           </div>
           <div>
             <h1 className="text-xl font-bold leading-tight">
-              {user?.role === "admin" ? "Gestion des Campings" :
-               user?.role === "gestionnaire" ? "Mes Campings" : "Découvrir les Campings"}
+              {user?.role === "admin"
+                ? "Gestion des Campings"
+                : user?.role === "gestionnaire"
+                ? "Mes Campings"
+                : "Découvrir les Campings"}
             </h1>
             <p className="text-xs text-muted-foreground">
-              {filteredCampings.length} camping{filteredCampings.length !== 1 ? "s" : ""}
+              {filteredCampings.length} camping
+              {filteredCampings.length !== 1 ? "s" : ""}
               {hasActiveFilters && " · filtres actifs"}
             </p>
           </div>
         </div>
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1 text-xs text-muted-foreground h-7">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="gap-1 text-xs text-muted-foreground h-7"
+          >
             <X className="h-3 w-3" /> Réinitialiser
           </Button>
         )}
       </div>
 
+      {/* Bloc filtres */}
       <div className="bg-card border rounded-xl p-3 mb-4 space-y-3">
 
+        {/* Ligne principale */}
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -204,7 +289,9 @@ const CampingsPage = () => {
             <SelectContent>
               <SelectItem value="all">Toute la Tunisie</SelectItem>
               {gouvernorats.map((gov) => (
-                <SelectItem key={gov} value={gov} className="text-xs">{gov}</SelectItem>
+                <SelectItem key={gov} value={gov} className="text-xs">
+                  {gov}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -217,25 +304,42 @@ const CampingsPage = () => {
           >
             <SlidersHorizontal className="h-3 w-3" />
             Filtres
-            {showAdvanced ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {showAdvanced ? (
+              <ChevronUp className="h-3 w-3" />
+            ) : (
+              <ChevronDown className="h-3 w-3" />
+            )}
           </Button>
 
-          <Button size="sm" className="h-8 text-xs gap-1 px-4" onClick={handleSearch} disabled={dataLoading}>
+          <Button
+            size="sm"
+            className="h-8 text-xs gap-1 px-4"
+            onClick={handleSearch}
+            disabled={dataLoading}
+          >
             <Search className="h-3 w-3" />
             {dataLoading ? "..." : "Chercher"}
           </Button>
         </div>
 
+        {/* Filtres avancés */}
         {showAdvanced && (
           <div className="border-t pt-3 space-y-3">
 
+            {/* Prix */}
             <div className="flex items-center gap-4">
-              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap w-24">Prix / nuit</span>
+              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap w-24">
+                Prix / nuit
+              </span>
               <div className="flex-1">
                 <Slider
                   value={[filters.prixMin, filters.prixMax]}
-                  min={0} max={500} step={5}
-                  onValueChange={(val) => setFilters({ ...filters, prixMin: val[0], prixMax: val[1] })}
+                  min={0}
+                  max={500}
+                  step={5}
+                  onValueChange={(val) =>
+                    setFilters({ ...filters, prixMin: val[0], prixMax: val[1] })
+                  }
                 />
               </div>
               <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded whitespace-nowrap">
@@ -243,6 +347,7 @@ const CampingsPage = () => {
               </span>
             </div>
 
+            {/* Services */}
             {services.length > 0 && (
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-1.5">Services</p>
@@ -254,13 +359,16 @@ const CampingsPage = () => {
                         checked={filters.serviceIds.includes(s.service_id)}
                         onCheckedChange={() => toggleSelection(s.service_id, "serviceIds")}
                       />
-                      <span className="text-xs text-muted-foreground hover:text-primary transition-colors">{s.nom}</span>
+                      <span className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                        {s.nom}
+                      </span>
                     </label>
                   ))}
                 </div>
               </div>
             )}
 
+            {/* Type de zone */}
             {typeZones.length > 0 && (
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-1.5">Type de zone</p>
@@ -272,7 +380,9 @@ const CampingsPage = () => {
                         checked={filters.typeZoneIds.includes(z.type_zone_id)}
                         onCheckedChange={() => toggleSelection(z.type_zone_id, "typeZoneIds")}
                       />
-                      <span className="text-xs text-muted-foreground hover:text-primary transition-colors">{z.type_zone}</span>
+                      <span className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                        {z.type_zone}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -281,19 +391,30 @@ const CampingsPage = () => {
           </div>
         )}
 
+        {/* Filtres statut (admin / gestionnaire) */}
         {(user?.role === "admin" || user?.role === "gestionnaire") && (
           <div className="flex gap-1.5 flex-wrap border-t pt-3">
             <span className="text-xs text-muted-foreground flex items-center gap-1 mr-1">
               <Filter className="h-3 w-3" /> Statut :
             </span>
-            {getStatutFilters().map(f => {
+            {getStatutFilters().map((f) => {
               const isActive = filter === f;
               const colorMap = {
-                tous: isActive ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted",
-                en_attente: isActive ? "bg-yellow-500 text-white border-yellow-500" : "text-yellow-600 border-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20",
-                valide: isActive ? "bg-green-600 text-white border-green-600" : "text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20",
-                refuse: isActive ? "bg-red-600 text-white border-red-600" : "text-red-500 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20",
-                archive: isActive ? "bg-gray-600 text-white border-gray-600" : "text-gray-500 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/20",
+                tous: isActive
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border hover:bg-muted",
+                en_attente: isActive
+                  ? "bg-yellow-500 text-white border-yellow-500"
+                  : "text-yellow-600 border-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20",
+                valide: isActive
+                  ? "bg-green-600 text-white border-green-600"
+                  : "text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20",
+                refuse: isActive
+                  ? "bg-red-600 text-white border-red-600"
+                  : "text-red-500 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20",
+                archive: isActive
+                  ? "bg-gray-600 text-white border-gray-600"
+                  : "text-gray-500 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/20",
               };
               return (
                 <button
@@ -310,32 +431,9 @@ const CampingsPage = () => {
         )}
       </div>
 
-      {user?.role === "client" && recommendations.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-1.5 bg-primary/10 rounded-lg">
-              <Tent className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold leading-tight">Recommandés pour vous</h2>
-              <p className="text-xs text-muted-foreground">Basé sur vos visites et réservations</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recommendations.map((camping) => (
-              <CampingCard
-                key={camping.camping_id}
-                camping={camping}
-                user={user}
-                onStatusUpdate={() => {}}
-                onDelete={() => {}}
-                onEdit={() => {}}
-              />
-            ))}
-          </div>
-        </div>
-      )}
 
+
+      {/* Liste campings */}
       {filteredCampings.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredCampings.map((camping) => (
@@ -368,12 +466,16 @@ const CampingsPage = () => {
         </div>
       )}
 
+      {/* Modal édition */}
       {selectedCamping && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-card rounded-xl w-full max-w-2xl my-4 shadow-2xl">
             <EditCampingForm
               camping={selectedCamping}
-              onSuccess={() => { setSelectedCamping(null); handleSearch(); }}
+              onSuccess={() => {
+                setSelectedCamping(null);
+                handleSearch();
+              }}
               onCancel={() => setSelectedCamping(null)}
             />
           </div>
@@ -382,5 +484,18 @@ const CampingsPage = () => {
     </div>
   );
 };
+
+const CampingsPage = () => (
+  <Suspense
+    fallback={
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+        <Tent className="h-10 w-10 text-primary animate-bounce" />
+        <p className="text-muted-foreground text-sm">Chargement...</p>
+      </div>
+    }
+  >
+    <CampingsPageInner />
+  </Suspense>
+);
 
 export default CampingsPage;

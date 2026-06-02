@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; 
 import { useParams, useRouter } from "next/navigation";
 import {
   MapPin, ArrowLeft, Heart, Calendar,
@@ -44,7 +44,6 @@ const getWeatherLabel = (code, meteo) => {
   return "Venteux";
 };
 
-// ─── Composant message d'erreur inline ───────────────────────────────────────
 const FieldError = ({ message }) => {
   if (!message) return null;
   return (
@@ -55,7 +54,6 @@ const FieldError = ({ message }) => {
   );
 };
 
-// ─── Composant message info inline ───────────────────────────────────────────
 const FieldInfo = ({ message }) => {
   if (!message) return null;
   return (
@@ -66,7 +64,6 @@ const FieldInfo = ({ message }) => {
   );
 };
 
-// ─── Validation des dates ─────────────────────────────────────────────────────
 const validateReservation = ({ dateDebut, dateFin, nombrePersonnes }) => {
   const errors = {};
   const today = new Date();
@@ -76,9 +73,7 @@ const validateReservation = ({ dateDebut, dateFin, nombrePersonnes }) => {
     errors.dateDebut = "La date d'arrivée est obligatoire.";
   } else {
     const debut = new Date(dateDebut);
-    if (debut < today) {
-      errors.dateDebut = "La date d'arrivée ne peut pas être dans le passé.";
-    }
+    if (debut < today) errors.dateDebut = "La date d'arrivée ne peut pas être dans le passé.";
   }
 
   if (!dateFin) {
@@ -87,7 +82,6 @@ const validateReservation = ({ dateDebut, dateFin, nombrePersonnes }) => {
     const debut = new Date(dateDebut);
     const fin = new Date(dateFin);
     const nuits = Math.ceil((fin - debut) / (1000 * 60 * 60 * 24));
-
     if (fin <= debut) {
       errors.dateFin = "La date de départ doit être au moins 1 nuit après la date d'arrivée.";
     } else if (nuits > 30) {
@@ -116,8 +110,6 @@ const CampingDetailPage = () => {
   const [isFavori, setIsFavori] = useState(false);
   const [favoriLoading, setFavoriLoading] = useState(false);
   const [meteo, setMeteo] = useState(null);
-
-  // Lightbox
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
   const [note, setNote] = useState(0);
@@ -137,15 +129,16 @@ const CampingDetailPage = () => {
   const [nombreNuits, setNombreNuits] = useState(0);
   const [montantTotal, setMontantTotal] = useState(0);
 
-  // ── Erreurs de validation ────────────────────────────────────────────────
   const [dateErrors, setDateErrors] = useState({});
   const [touched, setTouched] = useState({ dateDebut: false, dateFin: false, nombrePersonnes: false });
 
   const [statutReservation, setStatutReservation] = useState(null);
   const [dateFinSejour, setDateFinSejour] = useState(null);
+
   const [recommendations, setRecommendations] = useState([]);
 
-  // ── Date minimale demain ─────────────────────────────────────────────────
+  const viewTracked = useRef(false);
+
   const todayStr = new Date().toISOString().split("T")[0];
   const tomorrowStr = (() => {
     const d = new Date();
@@ -153,7 +146,6 @@ const CampingDetailPage = () => {
     return d.toISOString().split("T")[0];
   })();
 
-  // ── Min date de départ = dateDebut + 1 jour ──────────────────────────────
   const minDateFin = (() => {
     if (!dateDebut) return todayStr;
     const d = new Date(dateDebut);
@@ -211,21 +203,15 @@ const CampingDetailPage = () => {
     checkFavori();
   }, [user, id]);
 
-  // ── Calcul nuits + montant + validation live ─────────────────────────────
   useEffect(() => {
     if (!camping) return;
-
-    // Valider uniquement les champs touchés
     const errorsToShow = {};
     const allErrors = validateReservation({ dateDebut, dateFin, nombrePersonnes });
-
     if (touched.dateDebut && allErrors.dateDebut) errorsToShow.dateDebut = allErrors.dateDebut;
     if (touched.dateFin && allErrors.dateFin) errorsToShow.dateFin = allErrors.dateFin;
     if (touched.nombrePersonnes && allErrors.nombrePersonnes) errorsToShow.nombrePersonnes = allErrors.nombrePersonnes;
-
     setDateErrors(errorsToShow);
 
-    // Calcul montant seulement si pas d'erreurs sur les dates
     if (dateDebut && dateFin && !allErrors.dateDebut && !allErrors.dateFin) {
       const debut = new Date(dateDebut);
       const fin = new Date(dateFin);
@@ -236,7 +222,6 @@ const CampingDetailPage = () => {
         return;
       }
     }
-
     setNombreNuits(0);
     setMontantTotal(0);
   }, [dateDebut, dateFin, nombrePersonnes, camping, touched]);
@@ -267,13 +252,18 @@ const CampingDetailPage = () => {
   }, [lightboxIndex, camping]);
 
   useEffect(() => {
-    if (camping && user) {
-      AnalyticsService.trackView(parseInt(id), camping.gouvernorat);
+    if (!camping?.camping_id || !user?.id) return;
+    if (viewTracked.current) return;
+    viewTracked.current = true;
+
+    AnalyticsService.trackView(parseInt(id), camping.gouvernorat);
+
+    if (user.role === "client") {
       AnalyticsService.getRecommendations(parseInt(id)).then(data => {
         setRecommendations(Array.isArray(data) ? data : []);
       });
     }
-  }, [camping, user]);
+  }, [camping?.camping_id, user?.id]);
 
   const handleFavori = async () => {
     if (!user) { router.push(LOGIN_PATH); return; }
@@ -284,9 +274,11 @@ const CampingDetailPage = () => {
         const favori = favoris.find((f) => f.camping.camping_id === parseInt(id));
         if (favori) await FavorisService.deleteFavori(favori.favori_id);
         setIsFavori(false);
+        await AnalyticsService.trackFavorite(parseInt(id), camping.gouvernorat); // ← optionnel : tracker le retrait différemment
       } else {
         await FavorisService.addFavori(user.id, parseInt(id));
         setIsFavori(true);
+        await AnalyticsService.trackFavorite(parseInt(id), camping.gouvernorat);
       }
     } catch (err) {
       console.error("Erreur favori:", err);
@@ -318,12 +310,9 @@ const CampingDetailPage = () => {
   };
 
   const handleSubmitReservation = async () => {
-    // Marquer tous les champs comme touchés pour afficher toutes les erreurs
     setTouched({ dateDebut: true, dateFin: true, nombrePersonnes: true });
-
     const errors = validateReservation({ dateDebut, dateFin, nombrePersonnes });
     setDateErrors(errors);
-
     if (Object.keys(errors).length > 0) return;
 
     setReservationLoading(true);
@@ -390,8 +379,6 @@ const CampingDetailPage = () => {
   if (!camping) return <div className="p-10 text-center">Camping introuvable</div>;
 
   const isClient = user?.role === "client";
-  const isAdmin = user?.role === "admin";
-  const isGestionnaire = user?.role === "gestionnaire";
   const avisValides = avisList.filter(a => a.statut === "valide");
   const avisEnAttente = avisList.filter(a =>
     a.statut === "en_attente" &&
@@ -408,6 +395,7 @@ const CampingDetailPage = () => {
         Retour
       </Button>
 
+      {/* ── Photos ────────────────────────────────────────────────────────── */}
       <div className="mb-6">
         {camping.photos?.length > 0 ? (
           <div className={`grid gap-2 ${
@@ -453,28 +441,18 @@ const CampingDetailPage = () => {
             </div>
           )}
           <div className="flex gap-2">
-            {(isAdmin || isGestionnaire) && (
-              <Badge className={`${
-                camping.statut === "valide" ? "bg-green-600" :
-                camping.statut === "refuse" ? "bg-red-600" : "bg-yellow-600"
-              }`}>
-                {camping.statut}
-              </Badge>
-            )}
             <Badge className="bg-primary capitalize">{camping.gouvernorat}</Badge>
           </div>
         </div>
       </div>
 
+      {/* ── Lightbox ──────────────────────────────────────────────────────── */}
       {lightboxIndex !== null && camping.photos?.length > 0 && (
         <div
           className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
           onClick={() => setLightboxIndex(null)}
         >
-          <button
-            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
-            onClick={() => setLightboxIndex(null)}
-          >
+          <button className="absolute top-4 right-4 text-white hover:text-gray-300 z-10" onClick={() => setLightboxIndex(null)}>
             <X className="h-8 w-8" />
           </button>
           {camping.photos.length > 1 && (
@@ -505,6 +483,7 @@ const CampingDetailPage = () => {
         </div>
       )}
 
+      {/* ── Infos + carte prix ────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="md:col-span-2">
           <h1 className="text-3xl font-bold uppercase mb-2">{camping.nom}</h1>
@@ -526,7 +505,7 @@ const CampingDetailPage = () => {
             <p className="text-xs text-muted-foreground uppercase font-semibold">Prix / nuit / personne</p>
             <p className="text-3xl font-bold text-green-600">{camping.prix} DT</p>
           </div>
-          {!isAdmin && !isGestionnaire && (
+          {isClient && (
             <>
               <Button className="w-full gap-2" onClick={handleReservation}>
                 <Calendar className="h-4 w-4" />
@@ -547,6 +526,7 @@ const CampingDetailPage = () => {
         </div>
       </div>
 
+      {/* ── Services ──────────────────────────────────────────────────────── */}
       <div className="mb-6">
         <h2 className="text-xl font-bold mb-3">Services disponibles ({camping.services?.length || 0})</h2>
         {camping.services?.length > 0 ? (
@@ -558,6 +538,7 @@ const CampingDetailPage = () => {
         ) : <p className="text-muted-foreground text-sm">Aucun service disponible.</p>}
       </div>
 
+      {/* ── Activités ─────────────────────────────────────────────────────── */}
       <div className="mb-6">
         <h2 className="text-xl font-bold mb-3">Activités ({camping.activites?.length || 0})</h2>
         {camping.activites?.length > 0 ? (
@@ -569,6 +550,7 @@ const CampingDetailPage = () => {
         ) : <p className="text-muted-foreground text-sm">Aucune activité disponible.</p>}
       </div>
 
+      {/* ── Types de zone ─────────────────────────────────────────────────── */}
       <div className="mb-6">
         <h2 className="text-xl font-bold mb-3">Types de zone ({camping.typeZones?.length || 0})</h2>
         {camping.typeZones?.length > 0 ? (
@@ -580,6 +562,7 @@ const CampingDetailPage = () => {
         ) : <p className="text-muted-foreground text-sm">Aucun type de zone défini.</p>}
       </div>
 
+      {/* ── Carte ─────────────────────────────────────────────────────────── */}
       {camping.latitude && camping.longitude && (
         <div className="mb-6">
           <h2 className="text-xl font-bold mb-3">Localisation</h2>
@@ -587,34 +570,29 @@ const CampingDetailPage = () => {
         </div>
       )}
 
-      {!isAdmin && !isGestionnaire && (
+      {/* ── Avis (clients uniquement) ─────────────────────────────────────── */}
+      {isClient && (
         <div className="mb-6">
           <h2 className="text-xl font-bold mb-3">Avis ({avisValides.length})</h2>
 
-          {!user && (
-            <div className="bg-muted border rounded-xl p-4 mb-4 flex items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground">Connectez-vous pour laisser un avis.</p>
-              <Button size="sm" onClick={() => router.push(LOGIN_PATH)}>Se connecter</Button>
+          {statutReservation === "peut" && (
+            <div className="bg-card border rounded-xl p-4 mb-4">
+              <p className="text-sm font-semibold mb-2">Laisser un avis</p>
+              <Rating value={note} onChange={setNote} style={{ maxWidth: 120 }} className="mb-3" />
+              <Textarea
+                placeholder="Partagez votre expérience..."
+                value={commentaire}
+                onChange={(e) => setCommentaire(e.target.value)}
+                rows={3}
+                className="text-sm mb-3"
+              />
+              <Button onClick={handleAddAvis} disabled={avisLoading || note === 0} className="w-full">
+                {avisLoading ? <><Loader2 className="animate-spin h-4 w-4 mr-2" />Envoi...</> : "Envoyer l'avis"}
+              </Button>
             </div>
           )}
 
-        {isClient && statutReservation === "peut" && (
-  <div className="bg-card border rounded-xl p-4 mb-4">
-    <p className="text-sm font-semibold mb-2">Laisser un avis</p>
-    <Rating value={note} onChange={setNote} style={{ maxWidth: 120 }} className="mb-3" />
-    <Textarea
-      placeholder="Partagez votre expérience..."
-      value={commentaire}
-      onChange={(e) => setCommentaire(e.target.value)}
-      rows={3}
-      className="text-sm mb-3"
-    />
-    <Button onClick={handleAddAvis} disabled={avisLoading || note === 0} className="w-full">
-      {avisLoading ? <><Loader2 className="animate-spin h-4 w-4 mr-2" />Envoi...</> : "Envoyer l'avis"}
-    </Button>
-  </div>
-)}
-          {isClient && statutReservation === "sejour_en_cours" && (
+          {statutReservation === "sejour_en_cours" && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-4 text-sm text-blue-700 dark:text-blue-300">
               Votre séjour est en cours. Vous pourrez laisser un avis après le{" "}
               <span className="font-semibold">
@@ -623,7 +601,7 @@ const CampingDetailPage = () => {
             </div>
           )}
 
-          {isClient && statutReservation === "non_reserve" && (
+          {statutReservation === "non_reserve" && (
             <div className="bg-muted border rounded-xl p-4 mb-4 text-sm text-muted-foreground">
               Réservez ce camping et séjournez-y pour pouvoir laisser un avis.
             </div>
@@ -718,70 +696,48 @@ const CampingDetailPage = () => {
         </div>
       )}
 
-      {(isAdmin || isGestionnaire) && (
+      {/* ── Recommandations (clients uniquement) ──────────────────────────── */}
+      {isClient && recommendations.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-xl font-bold mb-3">Avis ({avisValides.length})</h2>
-          {avisValides.length > 0 ? (
-            <div className="space-y-3">
-              {avisValides.map((avis) => (
-                <div key={avis.avis_id} className="bg-card border rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Rating value={avis.note} readOnly style={{ maxWidth: 80 }} />
-                    <span className="text-xs text-muted-foreground">{avis.note}/5</span>
-                  </div>
-                  <p className="text-sm">{avis.commentaire}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {avis.utilisateur?.prenom} {avis.utilisateur?.nom} — {new Date(avis.date).toLocaleDateString("fr-FR")}
-                  </p>
+          <h2 className="text-xl font-bold mb-4">Campings similaires</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recommendations.map(c => (
+              <div
+                key={c.camping_id}
+                className="bg-card border rounded-xl overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => router.push(`/en/camping/${c.camping_id}`)}
+              >
+                <div className="h-36 overflow-hidden">
+                  <img
+                    src={c.photos?.[0]?.url || "https://placehold.co/400x200?text=Camping"}
+                    alt={c.nom}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    onError={e => { e.target.src = "https://placehold.co/400x200?text=Camping"; }}
+                  />
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-sm">Aucun avis pour le moment.</p>
-          )}
-
-          {recommendations.length > 0 && (
-            <div className="mb-6 mt-6">
-              <h2 className="text-xl font-bold mb-4">Campings similaires</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {recommendations.map(c => (
-                  <div
-                    key={c.camping_id}
-                    className="bg-card border rounded-xl overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => router.push(`/en/camping/${c.camping_id}`)}
-                  >
-                    <div className="h-36 overflow-hidden">
-                      <img
-                        src={c.photos?.[0]?.url || "https://placehold.co/400x200?text=Camping"}
-                        alt={c.nom}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                        onError={e => { e.target.src = "https://placehold.co/400x200?text=Camping"; }}
-                      />
-                    </div>
-                    <div className="p-3">
-                      <h3 className="font-semibold text-sm truncate">{c.nom}</h3>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                        <MapPin className="h-3 w-3" />{c.gouvernorat}
-                      </p>
-                      {c.moyenneAvis > 0 && (
-                        <p className="text-xs text-yellow-500 mt-1">
-                          {"★".repeat(Math.round(c.moyenneAvis))}{"☆".repeat(5 - Math.round(c.moyenneAvis))}{" "}
-                          <span className="text-muted-foreground">{c.moyenneAvis.toFixed(1)}/5</span>
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                <div className="p-3">
+                  <h3 className="font-semibold text-sm truncate">{c.nom}</h3>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                    <MapPin className="h-3 w-3" />{c.gouvernorat}
+                  </p>
+                  {c.moyenneAvis > 0 && (
+                    <p className="text-xs text-yellow-500 mt-1">
+                      {"★".repeat(Math.round(c.moyenneAvis))}{"☆".repeat(5 - Math.round(c.moyenneAvis))}{" "}
+                      <span className="text-muted-foreground">{c.moyenneAvis.toFixed(1)}/5</span>
+                    </p>
+                  )}
+                  <p className="text-xs font-semibold text-green-600 mt-1">{c.prix} DT / nuit</p>
+                </div>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       )}
 
+      {/* ── Modal réservation ─────────────────────────────────────────────── */}
       {showReservationForm && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-card rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <div>
                 <h2 className="text-lg font-bold">Demande de réservation</h2>
@@ -797,7 +753,6 @@ const CampingDetailPage = () => {
             </div>
 
             <div className="px-6 py-5 space-y-5">
-
               <div className="flex items-start gap-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl px-3.5 py-3">
                 <Moon className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
@@ -817,10 +772,7 @@ const CampingDetailPage = () => {
                     onChange={(e) => {
                       const val = e.target.value;
                       setDateDebut(val);
-                      // Si dateFin devient invalide, on la reset
                       if (dateFin) {
-                        const newMin = new Date(val);
-                        newMin.setDate(newMin.getDate() + 1);
                         if (new Date(dateFin) <= new Date(val)) {
                           setDateFin("");
                           setTouched(t => ({ ...t, dateFin: false }));
@@ -872,9 +824,7 @@ const CampingDetailPage = () => {
                     <FieldInfo message={`Minimum : ${new Date(minDateFin).toLocaleDateString("fr-FR")}`} />
                   )}
                   {!dateDebut && (
-                    <p className="text-xs text-muted-foreground mt-1.5 italic">
-                      Choisissez d'abord la date d'arrivée.
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1.5 italic">Choisissez d'abord la date d'arrivée.</p>
                   )}
                 </div>
               </div>
@@ -937,24 +887,14 @@ const CampingDetailPage = () => {
                 </div>
               )}
 
-             
               <div className="flex gap-3 pt-1">
-                <Button
-                  className="flex-1"
-                  onClick={handleSubmitReservation}
-                  disabled={reservationLoading || !canSubmit}
-                >
+                <Button className="flex-1" onClick={handleSubmitReservation} disabled={reservationLoading || !canSubmit}>
                   {reservationLoading
                     ? <><Loader2 className="animate-spin h-4 w-4 mr-2" />Envoi en cours...</>
                     : "Confirmer la demande"
                   }
                 </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={closeModal}
-                  disabled={reservationLoading}
-                >
+                <Button variant="outline" className="flex-1" onClick={closeModal} disabled={reservationLoading}>
                   Annuler
                 </Button>
               </div>
@@ -964,7 +904,6 @@ const CampingDetailPage = () => {
                   Veuillez corriger les erreurs pour continuer.
                 </p>
               )}
-
             </div>
           </div>
         </div>

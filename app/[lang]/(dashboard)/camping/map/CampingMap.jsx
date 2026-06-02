@@ -202,7 +202,7 @@ export default function CampingMap() {
                 onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${selected.latitude},${selected.longitude}`, "_blank")}
                 className="w-full flex items-center justify-center gap-1.5 border border-gray-200 dark:border-zinc-700 text-xs text-gray-500 hover:text-gray-700 py-2 rounded-xl transition-colors"
               >
-                🧭 Itinéraire
+                 Itinéraire
               </button>
             </div>
           </div>
