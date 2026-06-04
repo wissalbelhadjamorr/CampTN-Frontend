@@ -696,7 +696,6 @@ const CampingDetailPage = () => {
         </div>
       )}
 
-      {/* ── Recommandations (clients uniquement) ──────────────────────────── */}
       {isClient && recommendations.length > 0 && (
         <div className="mb-6">
           <h2 className="text-xl font-bold mb-4">Campings similaires</h2>
@@ -734,7 +733,6 @@ const CampingDetailPage = () => {
         </div>
       )}
 
-      {/* ── Modal réservation ─────────────────────────────────────────────── */}
       {showReservationForm && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-card rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">

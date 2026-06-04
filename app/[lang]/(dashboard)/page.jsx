@@ -105,7 +105,7 @@ const HomePage = () => {
                 👋 Bienvenue, {prenom} !
               </div>
             ) : (
-              <Link href={`/${lang}/auth/register`} className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-colors shadow-lg shadow-emerald-500/25">
+              <Link href={`/${lang}/register`} className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-colors shadow-lg shadow-emerald-500/25">
                 Commencer gratuitement
               </Link>
             )}

@@ -30,7 +30,7 @@ const RegPage = () => {
 
             <div className="grid grid-cols-3 gap-4 pt-2">
               {[
-                { value: "20F+", label: "Campings" },
+                { value: "20+", label: "Campings" },
                 { value: "24", label: "Gouvernorats" },
                 { value: "20+", label: "Voyageurs" },
               ].map((stat) => (
