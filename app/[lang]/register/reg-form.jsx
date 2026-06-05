@@ -58,34 +58,33 @@ const RegForm = () => {
   const togglePasswordType = () => {
     setPasswordType(passwordType === "password" ? "text" : "password");
   };
-
- const onSubmit = (data) => {
+const onSubmit = (data) => {
   startTransition(async () => {
-    try {
-      await addUser({
-        ...data,
-        justificatif: data.role === "gestionnaire" ? data.justificatif : undefined
-      });
-      
-      if (data.role === "gestionnaire") {
-        toast("Inscription réussie ! Vous recevrez un email dès que votre compte sera validé par un administrateur.", {
-          duration: 8000,
-          
-          style: {
-            background: "#fefce8",
-            color: "#854d0e",
-            border: "1px solid #fde047",
-          },
-        });
-      } else {
-        toast.success("Inscription réussie !");
-      }
-      
-      reset();
-      router.push("/en/login");
-    } catch (err) {
-      toast.error(err.message || "Erreur lors de l'inscription.");
+    const result = await addUser({
+      ...data,
+      justificatif: data.role === "gestionnaire" ? data.justificatif : undefined
+    });
+
+    if (result?.success === false) {
+      toast.error(result.error || "Erreur lors de l'inscription.");
+      return;
     }
+
+    if (data.role === "gestionnaire") {
+      toast("Inscription réussie ! Vous recevrez un email dès que votre compte sera validé.", {
+        duration: 8000,
+        style: {
+          background: "#fefce8",
+          color: "#854d0e",
+          border: "1px solid #fde047",
+        },
+      });
+    } else {
+      toast.success("Inscription réussie !");
+    }
+
+    reset();
+    router.push("/en/login");
   });
 };
 
