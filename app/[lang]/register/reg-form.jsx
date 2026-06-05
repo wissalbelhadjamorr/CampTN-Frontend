@@ -194,7 +194,7 @@ const RegForm = () => {
         type="button"
         variant="outline"
         className="w-full flex items-center gap-2"
-        onClick={() => (window.location.href = "http://localhost:3000/auth/google")}
+        onClick={() => (window.location.href = "https://camptn-backend-production.up.railway.app/auth/google")}
       >
         <Image src={googleIcon} alt="google" className="w-5 h-5" />
         S'inscrire avec Google

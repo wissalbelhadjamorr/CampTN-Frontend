@@ -18,7 +18,7 @@ const ProfilPage = () => {
     if (!token) return;
     const fetchProfil = async () => {
       try {
-        const res = await fetch("http://localhost:3000/utilisateur/profil", {
+        const res = await fetch("https://camptn-backend-production.up.railway.app/utilisateur/profil", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -41,7 +41,7 @@ const ProfilPage = () => {
         email: formData.email,
         ...(compte === "local" && formData.newPassword && { password: formData.newPassword }),
       };
-      const res = await fetch("http://localhost:3000/utilisateur/profil", {
+      const res = await fetch("https://camptn-backend-production.up.railway.app/utilisateur/profil", {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(body),

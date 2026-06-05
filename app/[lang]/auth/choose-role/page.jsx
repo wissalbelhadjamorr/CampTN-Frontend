@@ -20,7 +20,7 @@ const ChooseRolePage = () => {
 
     setIsPending(true);
     try {
-      const res = await fetch("http://localhost:3000/auth/choose-role", {
+      const res = await fetch("https://camptn-backend-production.up.railway.app/auth/choose-role", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

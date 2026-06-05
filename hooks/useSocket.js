@@ -9,7 +9,7 @@ export const useSocket = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    socketRef.current = io("http://localhost:3000", {
+    socketRef.current = io("https://camptn-backend-production.up.railway.app", {
       auth: { token },
     });
 

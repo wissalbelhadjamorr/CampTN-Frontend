@@ -21,7 +21,7 @@ const PhotoCarousel = ({ photos, nom }) => {
   return (
     <div className="relative w-full h-full">
       <img
-        src={photos[index]?.url?.startsWith("http") ? photos[index].url : `http://localhost:3000/uploads/${photos[index].url}`}
+        src={photos[index]?.url?.startsWith("http") ? photos[index].url : `https://camptn-backend-production.up.railway.app/uploads/${photos[index].url}`}
         alt={nom}
         className="w-full h-full object-cover"
         onError={(e) => { e.target.src = "https://placehold.co/400x200?text=Pas+de+photo"; }}

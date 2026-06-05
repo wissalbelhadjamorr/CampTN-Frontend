@@ -1,5 +1,5 @@
 export async function register(dto) {
-  const res = await fetch("http://localhost:3000/auth/register", {
+  const res = await fetch("https://camptn-backend-production.up.railway.app/auth/register", {
     method: "POST",
     headers: { 
       "Content-Type": "application/json" 
@@ -17,7 +17,7 @@ export async function register(dto) {
 
 
 export async function login(dto){
-    const res = await fetch("http://localhost:3000/auth/login", {
+    const res = await fetch("https://camptn-backend-production.up.railway.app/auth/login", {
         method: "POST",
         headers : {
             "Content-Type" : "application/json"

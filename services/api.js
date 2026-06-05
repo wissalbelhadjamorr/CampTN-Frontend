@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000";
+const API_URL = "https://camptn-backend-production.up.railway.app";
 
 export const authFetch = async (url, options = {}) => {
   const token = localStorage.getItem("token");

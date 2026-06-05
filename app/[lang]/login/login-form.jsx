@@ -176,7 +176,7 @@ Connectez-vous
   type="button"
   variant="outline"
   className="rounded-full border-default-300 hover:bg-background"
-  onClick={() => window.location.href = "http://localhost:3000/auth/google"}
+  onClick={() => window.location.href = "https://camptn-backend-production.up.railway.app/auth/google"}
 >
   <Image src={googleIcon} alt="google" className="w-5 h-5" />
           Se connecter avec Google

@@ -80,7 +80,7 @@ const NotificationMessage = () => {
   useEffect(() => {
     if (!token) return;
 
-    const socket = io("http://localhost:3000", { auth: { token } });
+    const socket = io("https://camptn-backend-production.up.railway.app", { auth: { token } });
     socketRef.current = socket;
 
     socket.on("connect", () => console.log("✅ Socket connecté:", socket.id));

@@ -83,7 +83,7 @@ export default function NotificationsPage() {
   useEffect(() => {
     if (!token) return;
 
-    const socket = io("http://localhost:3000", { auth: { token } });
+    const socket = io("https://camptn-backend-production.up.railway.app", { auth: { token } });
     socketRef.current = socket;
 
     socket.emit("getNotifications");
